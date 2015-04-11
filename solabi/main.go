@@ -6,7 +6,7 @@ import (
     "errors"
     "io/ioutil"
 
-    "github.com/debris/abi"
+    "github.com/debris/solabi"
 )
 
 type mode string
