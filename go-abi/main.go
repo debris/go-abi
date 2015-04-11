@@ -15,21 +15,9 @@ const (
     Decode = "dec"
 )
 
-type kind string
-const (
-    Method kind = "method"
-    Int = "int"
-    UInt = "uint"
-    Bytes = "bytes"
-    Real = "real"
-    UReal = "ureal"
-    Address = "address"
-    Bool = "bool"
-)
-
 type options struct {
     mode
-    kind
+    kind string
     abi string
     method string
     params []string
@@ -68,14 +56,8 @@ func parseArgs(args []string) (o *options, err error) {
 
     }
 
-    switch args[2] {
-        case string(Method), string(Int), string(UInt), string(Bytes), string(Real), string(UReal), string(Address), string(Bool):
-            o.kind = kind(args[2]); break
-        default:
-            err = errors.New("type must be: 'method', 'int', 'uint', 'bytes', 'real', 'ureal', 'address' or 'bool'"); return
-    }
-
-    if o.kind != Method {
+    o.kind = args[2];
+    if o.kind != "method" {
         o.params = os.Args[3:]
         return
     }
@@ -105,7 +87,7 @@ func execute(o *options) (result string, err error) {
         return
     }
 
-    if o.kind == Method {
+    if o.kind == "method" {
         if o.mode == Encode {
             result, err = coder.EncodeMethod(o.abi, o.method, o.params)
         } else {

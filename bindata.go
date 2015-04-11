@@ -76,7 +76,7 @@ func abi_min_js() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "abi.min.js", size: 33387, mode: os.FileMode(420), modTime: time.Unix(1428764383, 0)}
+	info := bindata_file_info{name: "abi.min.js", size: 33387, mode: os.FileMode(420), modTime: time.Unix(1428765157, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
