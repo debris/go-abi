@@ -55,7 +55,7 @@ Example:
 func parseArgs(args []string) (o *options, err error) {
     o = new(options)
 
-    if len(args) < 5 {
+    if len(args) < 3 {
         err = errors.New("Not enought params")
         return
     }
@@ -80,6 +80,11 @@ func parseArgs(args []string) (o *options, err error) {
         return
     }
 
+    if len(args) < 5 {
+        err = errors.New("Not enought params to encode/decode method")
+        return
+    }
+
     bytes, err := ioutil.ReadFile(args[3])
 
     if err != nil {
@@ -94,19 +99,24 @@ func parseArgs(args []string) (o *options, err error) {
 }
 
 func execute(o *options) (result string, err error) {
-    coder, err := abi.New(o.abi);
+    coder, err := abi.New();
 
     if err != nil {
         return
     }
 
-    switch o.mode {
-        case Encode:
-            result, err = coder.EncodeMethod(o.method, o.params); break
-        case Decode:
-            result, err = coder.DecodeMethod(o.method, o.params[0]); break
-        default:
-
+    if o.kind == Method {
+        if o.mode == Encode {
+            result, err = coder.EncodeMethod(o.abi, o.method, o.params)
+        } else {
+            result, err = coder.DecodeMethod(o.abi, o.method, o.params[0])
+        }
+    } else {
+        if o.mode == Encode {
+            result, err = coder.EncodeParam(string(o.kind), o.params[0])
+        } else {
+            result, err = coder.DecodeParam(string(o.kind), o.params[0])
+        }
     }
 
     return

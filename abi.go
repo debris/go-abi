@@ -9,14 +9,11 @@ import (
 
 type Abi struct {
     jsvm *otto.Otto
-    json string
 }
 
-func New(json string) (self *Abi, err error) {
-
+func New() (self *Abi, err error) {
     self = new(Abi)
     self.jsvm = otto.New()
-    self.json = json
 
     data, err := Asset("abi.min.js");
     if err != nil {
@@ -33,11 +30,6 @@ func New(json string) (self *Abi, err error) {
         return
     }
 
-    if _, err = self.jsvm.Run("var json = " + self.json + ";"); err != nil {
-        err = errors.New("incorrect json file")
-        return
-    }
-
     return
 }
 
@@ -49,7 +41,12 @@ func toJsonArray(params []string) (arr string) {
     return
 }
 
-func (self *Abi) EncodeMethod(method string, params []string) (result string, err error) {
+func (self *Abi) EncodeMethod(json string, method string, params []string) (result string, err error) {
+    if _, err = self.jsvm.Run("var json = " + json + ";"); err != nil {
+        err = errors.New("incorrect json file")
+        return
+    }
+
     if _, err = self.jsvm.Run("var method = \"" + method + "\";"); err != nil {
         err = errors.New("incorrect method name")
         return
@@ -73,7 +70,12 @@ func (self *Abi) EncodeMethod(method string, params []string) (result string, er
     return
 }
 
-func (self *Abi) DecodeMethod(method string, param string) (result string, err error) {
+func (self *Abi) DecodeMethod(json string, method string, param string) (result string, err error) {
+    if _, err = self.jsvm.Run("var json = " + json + ";"); err != nil {
+        err = errors.New("incorrect json file")
+        return
+    }
+
     if _, err = self.jsvm.Run("var method = \"" + method + "\";"); err != nil {
         err = errors.New("incorrect method name")
         return
@@ -94,11 +96,48 @@ func (self *Abi) DecodeMethod(method string, param string) (result string, err e
 
     return
 }
-//
-//func (self *Abi) EncodeParam(kind string, param string) (result string, err error) {
-//
-//}
-//
-//func (self *Abi) DecodeParam(kind string, param string) (result string, err error) {
-//
-//}
+
+func (self *Abi) EncodeParam(kind string, param string) (result string, err error) {
+
+    if _, err = self.jsvm.Run("var kind = \"" + kind + "\";"); err != nil {
+        err = errors.New("incorrect kind")
+        return
+    }
+
+    if _, err = self.jsvm.Run("var param = \"" + param + "\";"); err != nil {
+        err = errors.New("incorrect param")
+        return
+    }
+
+    value, err := self.jsvm.Run("abi.encodeParam(kind, param)")
+
+    if err != nil {
+        return
+    }
+
+    result = value.String()
+
+    return
+}
+
+func (self *Abi) DecodeParam(kind string, param string) (result string, err error) {
+    if _, err = self.jsvm.Run("var kind = \"" + kind + "\";"); err != nil {
+        err = errors.New("incorrect kind")
+        return
+    }
+
+    if _, err = self.jsvm.Run("var param = \"" + param + "\";"); err != nil {
+        err = errors.New("incorrect param")
+        return
+    }
+
+    value, err := self.jsvm.Run("abi.decodeParam(kind, param)")
+
+    if err != nil {
+        return
+    }
+
+    result = value.String()
+
+    return
+}

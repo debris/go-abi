@@ -5291,12 +5291,28 @@ module.exports = (function () {
     };
 
     var encodeParam = function (kind, param) {
+        
+        var inputs = [{
+            type: kind
+        }];
 
+        return '0x' + abi.formatInput(inputs, [param]);
     };
 
 
     var decodeParam = function (kind, param) {
 
+        var outputs = [{
+            type: kind
+        }];
+
+        // TODO: that's dumb, fix this in web3.js
+        if (param.indexOf('0x') !== 0) {
+            param = '0x' + param;
+        }
+
+        var decoded = abi.formatOutput(outputs, param);
+        return decoded[0].toString(10);
     };
 
     return {
