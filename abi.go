@@ -33,6 +33,11 @@ func New(json string) (self *Abi, err error) {
         return
     }
 
+    if _, err = self.jsvm.Run("var json = " + self.json + ";"); err != nil {
+        err = errors.New("incorrect json file")
+        return
+    }
+
     return
 }
 
@@ -44,30 +49,20 @@ func toJsonArray(params []string) (arr string) {
     return
 }
 
-func load(abi *Abi, method string, params []string) (error) {
-    if _, err := abi.jsvm.Run("var json = " + abi.json + ";"); err != nil {
-        return errors.New("incorrect json file")
-    }
-
-    if _, err := abi.jsvm.Run("var method = \"" + method + "\";"); err != nil {
-        return errors.New("incorrect method name")
+func (self *Abi) EncodeMethod(method string, params []string) (result string, err error) {
+    if _, err = self.jsvm.Run("var method = \"" + method + "\";"); err != nil {
+        err = errors.New("incorrect method name")
+        return
     }
 
     arr := toJsonArray(params)
 
-    if _, err := abi.jsvm.Run("var params = " + arr + ";"); err != nil {
-        return errors.New("incorrect method name")
-    }
-
-    return nil
-}
-
-func (self *Abi) Encode(method string, params []string) (result string, err error) {
-    if err = load(self, method, params); err != nil {
+    if _, err = self.jsvm.Run("var params = " + arr + ";"); err != nil {
+        err = errors.New("incorrect params")
         return
     }
 
-    value, err := self.jsvm.Run("abi.encode(json, method, params)")
+    value, err := self.jsvm.Run("abi.encodeMethod(json, method, params)")
 
     if err != nil {
         return
@@ -78,12 +73,18 @@ func (self *Abi) Encode(method string, params []string) (result string, err erro
     return
 }
 
-func (self *Abi) Decode(method string, params []string) (result string, err error) {
-    if err = load(self, method, params); err != nil {
+func (self *Abi) DecodeMethod(method string, param string) (result string, err error) {
+    if _, err = self.jsvm.Run("var method = \"" + method + "\";"); err != nil {
+        err = errors.New("incorrect method name")
         return
     }
 
-    value, err := self.jsvm.Run("abi.decode(json, method, params)")
+    if _, err = self.jsvm.Run("var param = \"" + param + "\";"); err != nil {
+        err = errors.New("incorrect param")
+        return
+    }
+
+    value, err := self.jsvm.Run("abi.decodeMethod(json, method, param)")
 
     if err != nil {
         return
@@ -93,4 +94,11 @@ func (self *Abi) Decode(method string, params []string) (result string, err erro
 
     return
 }
-
+//
+//func (self *Abi) EncodeParam(kind string, param string) (result string, err error) {
+//
+//}
+//
+//func (self *Abi) DecodeParam(kind string, param string) (result string, err error) {
+//
+//}

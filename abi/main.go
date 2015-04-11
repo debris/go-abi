@@ -10,15 +10,27 @@ import (
 )
 
 type mode string
-
 const (
     Encode mode = "enc"
     Decode = "dec"
 )
 
+type kind string
+const (
+    Method kind = "method"
+    Int = "int"
+    UInt = "uint"
+    Bytes = "bytes"
+    Real = "real"
+    UReal = "ureal"
+    Address = "address"
+    Bool = "bool"
+)
+
 type options struct {
-    abi string
     mode
+    kind
+    abi string
     method string
     params []string
 }
@@ -26,12 +38,13 @@ type options struct {
 func help() (str string) {
     str = `
 Usage:
-    abi <mode> <abi_json> <method_name> (<arg1> , (<arg2>, ... ))
+    abi <mode> <type> <abi_json> <method_name> (<arg1> , (<arg2>, ... ))
 
     modes: enc, dec
-    abi_json: path to json abi file
-    method_name: method you want to encode
-    args: method argsuments
+    type: method, int, uint, bytes, real, ureal, address, bool
+    abi_json: path to json abi file (only for type "method")
+    method_name: method you want to encode (only for type "method")
+    args: argsuments (can be multiple for type "method")
 
 Example:
     abi enc myContract.abi myMethod 12 0x123 hello
@@ -47,20 +60,33 @@ func parseArgs(args []string) (o *options, err error) {
         return
     }
 
-    bytes, err := ioutil.ReadFile(args[2])
+    switch args[1] {
+        case string(Encode), string(Decode):
+        o.mode = mode(args[1]); break
+        default:
+        err = errors.New("mode must be 'enc' or 'dec'"); return
+
+    }
+
+    switch args[2] {
+        case string(Method), string(Int), string(UInt), string(Bytes), string(Real), string(UReal), string(Address), string(Bool):
+            o.kind = kind(args[2]); break
+        default:
+            err = errors.New("type must be: 'method', 'int', 'uint', 'bytes', 'real', 'ureal', 'address' or 'bool'"); return
+    }
+
+    if o.kind != Method {
+        o.params = os.Args[3:]
+        return
+    }
+
+    bytes, err := ioutil.ReadFile(args[3])
 
     if err != nil {
         return
     }
 
     o.abi = string(bytes[:])
-
-    if args[3] != string(Encode) && args[3] != string(Decode) {
-        err = errors.New("mode must be 'enc' or 'dec'")
-        return
-    }
-
-    o.mode = mode(os.Args[3])
     o.method = os.Args[4]
     o.params = os.Args[5:]
 
@@ -74,10 +100,13 @@ func execute(o *options) (result string, err error) {
         return
     }
 
-    if o.mode == Encode {
-        result, err = coder.Encode(o.method, o.params)
-    } else if o.mode == Decode {
-        result, err = coder.Decode(o.method, o.params)
+    switch o.mode {
+        case Encode:
+            result, err = coder.EncodeMethod(o.method, o.params); break
+        case Decode:
+            result, err = coder.DecodeMethod(o.method, o.params[0]); break
+        default:
+
     }
 
     return

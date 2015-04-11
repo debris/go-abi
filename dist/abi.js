@@ -5254,7 +5254,7 @@ module.exports = (function () {
         }).toString();
     };
 
-    var encode = function (json, method, params) {
+    var encodeMethod = function (json, method, params) {
 
         var parser = abi.inputParser(json);
         var name = getFullMethodName(json, method);
@@ -5265,22 +5265,45 @@ module.exports = (function () {
             signature = functionSignature(name);
             encoded = parser[method].apply(null, params);
         } catch (e) {
-            throw new Error("Incorrect method name: " + method)
+            throw new Error("Incorrect method name: " + method);
         }
 
         return "0x" + signature + encoded;
     };
 
-    var decode = function (json, method, params) {
+    var decodeMethod = function (json, method, param) {
 
         var parser = abi.outputParser(json);
-        var decodedArgs = parser[method].apply(null, params);
+        var decoded = "";
+        
+        // TODO: that's dumb, fix this in web3.js
+        if (param.indexOf('0x') !== 0) {
+            param = '0x' + param;
+        }
+
+        try {
+            decoded = parser[method].apply(null, [param]);
+        } catch (e) {
+            throw new Error("Incorrect method name: " + method);
+        }
+
+        return decoded[0].toString(10);
+    };
+
+    var encodeParam = function (kind, param) {
+
+    };
+
+
+    var decodeParam = function (kind, param) {
 
     };
 
     return {
-        encode: encode,
-        decode: decode
+        encodeMethod: encodeMethod,
+        decodeMethod: decodeMethod,
+        encodeParam: encodeParam,
+        decodeParam: decodeParam
     };
 })();
 

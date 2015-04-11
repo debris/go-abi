@@ -10,7 +10,10 @@ var desc = [{
         "type" : "uint256"
     }],
     "name" : "hello",
-    "outputs" : [],
+    "outputs" : [{
+        "name" : "b",
+        "type" : "uint256"
+    }],
     "type" : "function"
 }, {
     "anonymous" : false,
@@ -20,17 +23,31 @@ var desc = [{
 }];
 
 describe('testing encode', function () {
-    it('should do simple eval', function () {
-        
+    it('should do simple encode', function () {
         // given
         var d = clone(desc); 
         var method = 'hello';
         
-        // encode
-        var result = abi.encode(d, method, [1]);
+        // when
+        var result = abi.encodeMethod(d, method, [1]);
 
+        // then
         assert.equal('0xb0f0c96a0000000000000000000000000000000000000000000000000000000000000001', result);
-
     });
 });
+
+describe('testing decode', function () {
+    it('should do simple decode', function () {
+        // given
+        var d = clone(desc); 
+        var method = 'hello';
+
+        // when
+        var result = abi.decodeMethod(d, method, '0x0000000000000000000000000000000000000000000000000000000000000001');
+        
+        // then
+        assert.deepEqual(result, '1');
+    });
+});
+
 
