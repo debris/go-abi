@@ -26,7 +26,7 @@ type options struct {
 func help() (str string) {
     str = `
 Usage:
-    abi <mode> <type> <abi_json> <method_name> (<arg1> , (<arg2>, ... ))
+    ./abi <mode> <type> <abi_json> <method_name> (<arg1> , (<arg2>, ... ))
 
     modes: enc, dec
     type: method, int, uint, bytes, real, ureal, address, bool
@@ -35,7 +35,8 @@ Usage:
     args: argsuments (can be multiple for type "method")
 
 Example:
-    abi enc myContract.abi myMethod 12 0x123 hello
+    ./abi enc method myContract.abi myMethod 12 0x123 hello
+    ./abi enc int 1
     `
     return
 }
