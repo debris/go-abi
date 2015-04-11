@@ -2,6 +2,7 @@
 var sha3 = require('crypto-js/sha3');
 var abi = require('./node_modules/web3/lib/solidity/abi');
 
+// TODO: web3.js should be fixed, and it should expose similar interface to this!
 module.exports = (function () {
 
     var dumbFill = function (json) {
